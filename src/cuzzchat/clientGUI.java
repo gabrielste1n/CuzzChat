@@ -5,19 +5,55 @@
  */
 package cuzzchat;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
 /**
  *
  * @author gabri
  */
-public class clientGUI extends javax.swing.JFrame {
+public final class clientGUI extends javax.swing.JFrame {
 
     /**
      * Creates new form clientGUI
-     */
+     */    
+    static Client currentClient;
+    DefaultListModel<String> listModel = new DefaultListModel<String>();
+    
     public clientGUI() {
         initComponents();
+        setLocationRelativeTo(null);
+        // SET LIST MODEL
+        clientList.setModel(listModel);
+        
+        // CREATE NEW CLIENT TO CONNECT TO SERVER                      
+        try {
+            currentClient = new Client(new String[]{"Cuzzy"});
+        } catch (IOException ex) {
+            Logger.getLogger(clientGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }  
+        
+        // START LOOKING FOR MESSAGES FROM SERVER
+        lookForResponse();
+        
     }
 
+    public JTextField getClientInput() {
+        return clientInput;
+    }
+
+    public JTextArea getChatArea() {
+        return chatArea;
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -27,25 +63,155 @@ public class clientGUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel1 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        chatArea = new javax.swing.JTextArea();
+        clientInput = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        connectionRequest = new javax.swing.JButton();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        clientList = new javax.swing.JList();
+        attach = new javax.swing.JLabel();
+        send = new javax.swing.JLabel();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+
+        chatArea.setEditable(false);
+        chatArea.setColumns(20);
+        chatArea.setRows(5);
+        chatArea.setRequestFocusEnabled(false);
+        jScrollPane1.setViewportView(chatArea);
+
+        clientInput.setSelectionColor(new java.awt.Color(255, 153, 51));
+
+        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cuzzchat/logo.PNG"))); // NOI18N
+
+        jPanel2.setBackground(new java.awt.Color(255, 145, 77));
+
+        jLabel2.setFont(new java.awt.Font("Segoe WP Black", 1, 30)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel2.setText("YOUR CUZZIES");
+
+        connectionRequest.setBackground(new java.awt.Color(255, 222, 89));
+        connectionRequest.setFont(new java.awt.Font("Segoe WP Black", 1, 14)); // NOI18N
+        connectionRequest.setForeground(new java.awt.Color(255, 255, 255));
+        connectionRequest.setText("SEND CONNECTION REQUEST");
+        connectionRequest.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                connectionRequestActionPerformed(evt);
+            }
+        });
+
+        clientList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        clientList.setFocusable(false);
+        clientList.setSelectionBackground(new java.awt.Color(255, 222, 89));
+        jScrollPane3.setViewportView(clientList);
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jScrollPane3)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(connectionRequest, javax.swing.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 288, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(connectionRequest, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        attach.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cuzzchat/attach.png"))); // NOI18N
+        attach.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+
+        send.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cuzzchat/send.png"))); // NOI18N
+        send.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        send.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                sendMouseClicked(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(clientInput, javax.swing.GroupLayout.PREFERRED_SIZE, 450, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(attach)
+                        .addGap(4, 4, 4)
+                        .addComponent(send, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel1)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 536, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(clientInput, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(attach, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(send, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 853, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void connectionRequestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectionRequestActionPerformed
+      String selectedCuzzy = clientList.getSelectedValue() + "";
+      int res = JOptionPane.showConfirmDialog(rootPane, "Are you sure you want to send " + selectedCuzzy + " a connection request?");
+      if (res == 0) {
+        currentClient.sendMessage("connectionRequest#"+ selectedCuzzy);
+      }      
+    }//GEN-LAST:event_connectionRequestActionPerformed
+
+    private void sendMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sendMouseClicked
+        //chnage this to only be able to send once cuzzy has agreed to connection
+        chatArea.append("You: "+ clientInput.getText()+"\n");
+        currentClient.sendMessage(clientInput.getText());
+        clientInput.setText("");
+    }//GEN-LAST:event_sendMouseClicked
+
     /**
      * @param args the command line arguments
      */
+      
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -73,11 +239,69 @@ public class clientGUI extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new clientGUI().setVisible(true);
+                new clientGUI().setVisible(true);    
             }
         });
     }
+    
+    public void lookForResponse()
+    {
+        readMessage.start();
+    }
+    
+    Thread readMessage = new Thread(new Runnable()  
+        { 
+            @Override
+            public void run() { 
+  
+                while (true) { 
+                    String recieved = currentClient.readMessage();
+                    
+                    StringTokenizer st = new StringTokenizer(recieved, "#"); 
+                    String message  = st.nextToken();
+                    String name = st.nextToken();
+                    
+                    // PROTOCOLS
+                    if (message.equals("username")) {                        
+                        
+                        currentClient.username = name;
+                        
+                    }
+                    else if (message.equals("addToActiveList")) {    
+                        
+                        if (!name.equals(currentClient.username)) {
+                            listModel.addElement(name); 
+                        }        
+                        
+                    }
+                    else if (message.equals("connectionRequest")) {                        
+                        
+                       int res = JOptionPane.showConfirmDialog(rootPane, name+ " wants to connect. Press 'Yes' to accept request.");
+                        
+                    }
+                    else if (recieved.equals("null")) {
+                        //DO NOTHING                                           
+                    }       
+                    //add protocol for normal message ?
+                    else{
+                        
+                    chatArea.append(message+"\n");                 } 
+                }
+            } 
+        }); 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel attach;
+    private javax.swing.JTextArea chatArea;
+    private javax.swing.JTextField clientInput;
+    private javax.swing.JList clientList;
+    private javax.swing.JButton connectionRequest;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JLabel send;
     // End of variables declaration//GEN-END:variables
 }
