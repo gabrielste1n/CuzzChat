@@ -1,15 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package cuzzchat;
 
+import java.awt.event.ActionEvent;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -20,40 +18,53 @@ import javax.swing.JTextField;
  *
  * @author gabri
  */
-public final class clientGUI extends javax.swing.JFrame {
+public final class clientGUI extends javax.swing.JFrame
+{
 
     /**
      * Creates new form clientGUI
-     */    
+     */
     static Client currentClient;
     DefaultListModel<String> listModel = new DefaultListModel<String>();
-    
-    public clientGUI() {
+
+    String chattingPartner = "";
+
+    public clientGUI()
+    {
         initComponents();
         setLocationRelativeTo(null);
         // SET LIST MODEL
         clientList.setModel(listModel);
-        
+
         // CREATE NEW CLIENT TO CONNECT TO SERVER                      
-        try {
-            currentClient = new Client(new String[]{"Cuzzy"});
-        } catch (IOException ex) {
+        try
+        {
+            currentClient = new Client(new String[]
+            {
+                "Cuzzy"
+            });
+        }
+        catch (IOException ex)
+        {
             Logger.getLogger(clientGUI.class.getName()).log(Level.SEVERE, null, ex);
-        }  
-        
+        }
+
         // START LOOKING FOR MESSAGES FROM SERVER
         lookForResponse();
-        
+        clientInput.addActionListener(action);
+
     }
 
-    public JTextField getClientInput() {
+    public JTextField getClientInput()
+    {
         return clientInput;
     }
 
-    public JTextArea getChatArea() {
+    public JTextArea getChatArea()
+    {
         return chatArea;
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -194,101 +205,170 @@ public final class clientGUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void connectionRequestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectionRequestActionPerformed
-      String selectedCuzzy = clientList.getSelectedValue() + "";
-      int res = JOptionPane.showConfirmDialog(rootPane, "Are you sure you want to send " + selectedCuzzy + " a connection request?");
-      if (res == 0) {
-        currentClient.sendMessage("connectionRequest#"+ selectedCuzzy);
-      }      
+        String selectedCuzzy = clientList.getSelectedValue() + "";
+        int res = JOptionPane.showConfirmDialog(rootPane, "Are you sure you want to send " + selectedCuzzy + " a connection request?");
+        if (res == 0)
+        {
+            currentClient.sendMessage("connectionRequest#" + selectedCuzzy);
+        }
     }//GEN-LAST:event_connectionRequestActionPerformed
 
     private void sendMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sendMouseClicked
-        //chnage this to only be able to send once cuzzy has agreed to connection
-        chatArea.append("You: "+ clientInput.getText()+"\n");
-        currentClient.sendMessage(clientInput.getText());
-        clientInput.setText("");
+
+        if (!chattingPartner.equals(""))
+        {
+            chatArea.append("You: " + clientInput.getText() + "\n");
+            currentClient.sendMessage(clientInput.getText() + "#" + chattingPartner);
+            clientInput.setText("");
+        }
+
     }//GEN-LAST:event_sendMouseClicked
 
     /**
      * @param args the command line arguments
      */
-      
-    public static void main(String args[]) {
+    public static void main(String args[])
+    {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
+        try
+        {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels())
+            {
+                if ("Nimbus".equals(info.getName()))
+                {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
+        }
+        catch (ClassNotFoundException ex)
+        {
             java.util.logging.Logger.getLogger(clientGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
+        }
+        catch (InstantiationException ex)
+        {
             java.util.logging.Logger.getLogger(clientGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
+        }
+        catch (IllegalAccessException ex)
+        {
             java.util.logging.Logger.getLogger(clientGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        }
+        catch (javax.swing.UnsupportedLookAndFeelException ex)
+        {
             java.util.logging.Logger.getLogger(clientGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new clientGUI().setVisible(true);    
+        java.awt.EventQueue.invokeLater(new Runnable()
+        {
+            public void run()
+            {
+                new clientGUI().setVisible(true);
             }
         });
     }
-    
+
+    Action action = new AbstractAction()
+    {
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            if (!chattingPartner.equals(""))
+            {
+                chatArea.append("You: " + clientInput.getText() + "\n");
+                currentClient.sendMessage(clientInput.getText() + "#" + chattingPartner);
+                clientInput.setText("");
+            }
+        }
+    };
+
     public void lookForResponse()
     {
         readMessage.start();
     }
-    
-    Thread readMessage = new Thread(new Runnable()  
-        { 
-            @Override
-            public void run() { 
-  
-                while (true) { 
-                    String recieved = currentClient.readMessage();
-                    
-                    StringTokenizer st = new StringTokenizer(recieved, "#"); 
-                    String message  = st.nextToken();
-                    String name = st.nextToken();
-                    
-                    // PROTOCOLS
-                    if (message.equals("username")) {                        
-                        
-                        currentClient.username = name;
-                        
-                    }
-                    else if (message.equals("addToActiveList")) {    
-                        
-                        if (!name.equals(currentClient.username)) {
-                            listModel.addElement(name); 
-                        }        
-                        
-                    }
-                    else if (message.equals("connectionRequest")) {                        
-                        
-                       int res = JOptionPane.showConfirmDialog(rootPane, name+ " wants to connect. Press 'Yes' to accept request.");
-                        
-                    }
-                    else if (recieved.equals("null")) {
-                        //DO NOTHING                                           
-                    }       
-                    //add protocol for normal message ?
-                    else{
-                        
-                    chatArea.append(message+"\n");                 } 
+
+    Thread readMessage = new Thread(new Runnable()
+    {
+        @Override
+        public void run()
+        {
+
+            while (true)
+            {
+                //MESSAGE SENT FROM SERVER TO CLIENT
+                String recieved = currentClient.readMessage();
+
+                StringTokenizer st = new StringTokenizer(recieved, "#");
+                String message = st.nextToken();
+                String senderName = st.nextToken();
+
+                // PROTOCOLS
+                //MESSAGE FORMAT: PROTOCOL#RECIPIENT
+                if (message.equals("username"))
+                {
+
+                    currentClient.username = senderName;
+
                 }
-            } 
-        }); 
+                else if (message.equals("addToActiveList"))
+                {
+
+                    if (!senderName.equals(currentClient.username))
+                    {
+                        listModel.addElement(senderName);
+                    }
+
+                }
+                else if (message.equals("connectionRequest"))
+                {
+
+                    int res = JOptionPane.showConfirmDialog(rootPane, senderName + " wants to connect. Press 'Yes' to accept request.");
+                    if (res == 0)
+                    {
+                        currentClient.sendMessage("requestAccepted#" + senderName);
+                        chattingPartner = senderName;
+                    }
+                    else if (res == 1)
+                    {
+                        currentClient.sendMessage("requestDeclined#" + senderName);
+                    }
+
+                }
+                else if (message.equals("requestDeclined"))
+                {
+
+                    JOptionPane.showMessageDialog(rootPane, "Sorry Cuzzy, " + senderName + " can't speak right now my china.");
+
+                }
+                else if (message.equals("requestAccepted"))
+                {
+
+                    JOptionPane.showMessageDialog(rootPane, "Sweet Boetie, " + senderName + " is in the chat, let him know about the jol last night.");
+                    chattingPartner = senderName;
+
+                }
+                else if (recieved.equals("null"))
+                {
+                    //DO NOTHING                                           
+                }
+                //add protocol for normal message ?
+                else
+                {
+                    //IF CLIENT IS RECIEVING PLAIN TEXT MESSAGE FROM SENDER
+                    if (senderName.equals(chattingPartner))
+                    {
+                        chatArea.append(chattingPartner + ": " + message + "\n");
+                    }
+
+                }
+            }
+        }
+    });
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel attach;
