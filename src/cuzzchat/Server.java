@@ -116,6 +116,7 @@ class ClientHandler implements Runnable
                 {
                     this.online = false;
                     this.socket.close();
+                    System.out.println(name +" has left.");
                     break;
                 }
                 
@@ -179,6 +180,13 @@ class ClientHandler implements Runnable
                         // WE ARE TELLING RECIPIENT WHICH CLIENT DECLINED TO CONNECT WITH HIM
                         
                         recipient.outputStream.writeUTF("messageDelivered#" + name);
+
+                    }
+                    else if (message.equals("chatTerminated"))
+                    {
+                        // WE ARE TELLING RECIPIENT WHICH CLIENT DECLINED TO CONNECT WITH HIM
+                        
+                        recipient.outputStream.writeUTF("chatTerminated#" + name);
 
                     }
                     else if (chatMessage)

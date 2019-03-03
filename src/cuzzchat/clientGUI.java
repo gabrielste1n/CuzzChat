@@ -61,6 +61,8 @@ public final class clientGUI extends javax.swing.JFrame
 //        listenForFile();
         clientInput.addActionListener(action);
 
+        Runtime.getRuntime().addShutdownHook(logout);
+
     }
 
     public JTextField getClientInput()
@@ -436,30 +438,55 @@ public final class clientGUI extends javax.swing.JFrame
                 }
                 else if (message.equals("requestAccepted"))
                 {
-                    chatArea.setText("");
-                    JOptionPane.showMessageDialog(rootPane, "Sweet Boetie, " + senderName + " is in the chat, let him know about the jol last night.");
-                    chattingPartner = senderName;
+                    if (chattingPartner.equals(""))
+                    {                       
+                        chatArea.setText("");
+                        JOptionPane.showMessageDialog(rootPane, "Sweet Boetie, " + senderName + " is in the chat, let him know about the jol last night.");
+                        chattingPartner = senderName;
+                    }
+                    else
+                    {
+                        currentClient.sendMessage("chatTerminated#"+chattingPartner);
+                        chatArea.setText("");
+                        JOptionPane.showMessageDialog(rootPane, "Sweet Boetie, " + senderName + " is in the chat, let him know about the jol last night.");
+                        chattingPartner = senderName;                        
+                    }
+
+                }
+                else if (message.equals("chatTerminated"))
+                {
+
+                    chatArea.setText(chattingPartner+ " has left the chat");
+                    
+                    for (int i = 0; i < listModel.size(); i++)
+                    {
+                        if (listModel.get(i).equals(chattingPartner))
+                        {
+                            listModel.remove(i);
+                        }
+                    }
+                    chattingPartner = "";
 
                 }
                 else if (message.equals("messageDelivered"))
                 {
                     try
-                        {
-                            Thread.sleep(500);
-                        }
-                        catch (InterruptedException e)
-                        {
-                            e.printStackTrace();
-                        }
+                    {
+                        Thread.sleep(500);
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
                     messageDelivered.setVisible(true);
                     try
-                        {
-                            Thread.sleep(2000);
-                        }
-                        catch (InterruptedException e)
-                        {
-                            e.printStackTrace();
-                        }
+                    {
+                        Thread.sleep(2000);
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
                     messageDelivered.setVisible(false);
                 }
                 else if (recieved.equals("null"))
@@ -471,9 +498,9 @@ public final class clientGUI extends javax.swing.JFrame
                     //IF CLIENT IS RECIEVING PLAIN TEXT MESSAGE FROM SENDER
                     if (senderName.equals(chattingPartner))
                     {
-                        chatArea.append(chattingPartner + ": " + message + "\n");                        
+                        chatArea.append(chattingPartner + ": " + message + "\n");
                         currentClient.sendMessage("messageDelivered#" + chattingPartner);
-                        
+
                     }
 
                 }
@@ -504,6 +531,25 @@ public final class clientGUI extends javax.swing.JFrame
                 {
                     System.out.println("Couldn't receive file");
                 }
+            }
+        }
+
+    });
+
+    Thread logout = new Thread(new Runnable()
+    {
+        @Override
+        public void run()
+        {
+
+            while (true)
+            {
+                if (!chattingPartner.equals(""))
+                {
+                    currentClient.sendMessage("chatTerminated#" + chattingPartner);
+                }
+                currentClient.sendMessage("logout");
+                System.exit(0);
             }
         }
 
