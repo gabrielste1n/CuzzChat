@@ -2,6 +2,7 @@ package cuzzchat;
 
 import java.awt.event.ActionEvent;
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -9,6 +10,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DefaultListModel;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
@@ -28,6 +30,7 @@ public final class clientGUI extends javax.swing.JFrame
     DefaultListModel<String> listModel = new DefaultListModel<String>();
 
     String chattingPartner = "";
+    String selectedFileName = "";
 
     public clientGUI()
     {
@@ -35,6 +38,9 @@ public final class clientGUI extends javax.swing.JFrame
         setLocationRelativeTo(null);
         // SET LIST MODEL
         clientList.setModel(listModel);
+
+        attachedFileDisplay.setVisible(false);
+        messageDelivered.setVisible(false);
 
         // CREATE NEW CLIENT TO CONNECT TO SERVER                      
         try
@@ -51,6 +57,8 @@ public final class clientGUI extends javax.swing.JFrame
 
         // START LOOKING FOR MESSAGES FROM SERVER
         lookForResponse();
+        // START LOOKING FOR FILES FROM SERVER
+//        listenForFile();
         clientInput.addActionListener(action);
 
     }
@@ -72,7 +80,8 @@ public final class clientGUI extends javax.swing.JFrame
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+    private void initComponents()
+    {
 
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -86,10 +95,13 @@ public final class clientGUI extends javax.swing.JFrame
         clientList = new javax.swing.JList();
         attach = new javax.swing.JLabel();
         send = new javax.swing.JLabel();
+        attachedFileDisplay = new javax.swing.JLabel();
+        messageDelivered = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel1.setPreferredSize(new java.awt.Dimension(861, 425));
 
         chatArea.setEditable(false);
         chatArea.setColumns(20);
@@ -112,8 +124,10 @@ public final class clientGUI extends javax.swing.JFrame
         connectionRequest.setFont(new java.awt.Font("Segoe WP Black", 1, 14)); // NOI18N
         connectionRequest.setForeground(new java.awt.Color(255, 255, 255));
         connectionRequest.setText("SEND CONNECTION REQUEST");
-        connectionRequest.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        connectionRequest.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 connectionRequestActionPerformed(evt);
             }
         });
@@ -147,14 +161,35 @@ public final class clientGUI extends javax.swing.JFrame
 
         attach.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cuzzchat/attach.png"))); // NOI18N
         attach.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        attach.addMouseListener(new java.awt.event.MouseAdapter()
+        {
+            public void mouseClicked(java.awt.event.MouseEvent evt)
+            {
+                attachMouseClicked(evt);
+            }
+        });
 
         send.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cuzzchat/send.png"))); // NOI18N
         send.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        send.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
+        send.addMouseListener(new java.awt.event.MouseAdapter()
+        {
+            public void mouseClicked(java.awt.event.MouseEvent evt)
+            {
                 sendMouseClicked(evt);
             }
         });
+
+        attachedFileDisplay.setBackground(new java.awt.Color(255, 153, 0));
+        attachedFileDisplay.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        attachedFileDisplay.setForeground(new java.awt.Color(255, 255, 255));
+        attachedFileDisplay.setText(" hello.jpg");
+        attachedFileDisplay.setOpaque(true);
+
+        messageDelivered.setBackground(new java.awt.Color(255, 153, 0));
+        messageDelivered.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        messageDelivered.setForeground(new java.awt.Color(255, 255, 255));
+        messageDelivered.setText(" Message Delivered");
+        messageDelivered.setOpaque(true);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -163,29 +198,36 @@ public final class clientGUI extends javax.swing.JFrame
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(messageDelivered, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(clientInput, javax.swing.GroupLayout.PREFERRED_SIZE, 450, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(clientInput, javax.swing.GroupLayout.PREFERRED_SIZE, 450, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(attachedFileDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 450, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(attach)
-                        .addGap(4, 4, 4)
-                        .addComponent(send, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jLabel1)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 536, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(send, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(23, 23, 23))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
+                .addComponent(messageDelivered, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(clientInput, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(attach, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(send, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(attach, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(attachedFileDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(clientInput, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(send, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
             .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -194,11 +236,11 @@ public final class clientGUI extends javax.swing.JFrame
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 853, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 843, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE)
         );
 
         pack();
@@ -218,11 +260,42 @@ public final class clientGUI extends javax.swing.JFrame
         if (!chattingPartner.equals(""))
         {
             chatArea.append("You: " + clientInput.getText() + "\n");
-            currentClient.sendMessage(clientInput.getText() + "#" + chattingPartner);
+            currentClient.sendMessage("chatMessage#" + clientInput.getText() + "#" + chattingPartner);
             clientInput.setText("");
         }
 
     }//GEN-LAST:event_sendMouseClicked
+
+    private void attachMouseClicked(java.awt.event.MouseEvent evt)//GEN-FIRST:event_attachMouseClicked
+    {//GEN-HEADEREND:event_attachMouseClicked
+        JFileChooser fc = new JFileChooser();
+        int option = fc.showOpenDialog(this);
+        if (option == JFileChooser.APPROVE_OPTION)
+        {
+
+            File file = fc.getSelectedFile();
+            String filePath = file.getAbsolutePath();
+            selectedFileName = file.getName();
+
+            //server statement
+            System.out.println("Opening: " + file.getName() + ".");
+
+            attachedFileDisplay.setText(" " + selectedFileName);
+            attachedFileDisplay.setVisible(true);
+//            chatArea.append("You sent " + file.getName() + ".\n");
+//            currentClient.sendMessage("fileTransferRequest#" + chattingPartner);
+//            
+//            try
+//            {
+//                currentClient.sendFile(file);
+//            }
+//            catch (IOException ex)
+//            {
+//                System.out.println(ex);
+//            }
+
+        }
+    }//GEN-LAST:event_attachMouseClicked
 
     /**
      * @param args the command line arguments
@@ -280,8 +353,9 @@ public final class clientGUI extends javax.swing.JFrame
         {
             if (!chattingPartner.equals(""))
             {
+                messageDelivered.setVisible(false);
                 chatArea.append("You: " + clientInput.getText() + "\n");
-                currentClient.sendMessage(clientInput.getText() + "#" + chattingPartner);
+                currentClient.sendMessage("chatMessage#" + clientInput.getText() + "#" + chattingPartner);
                 clientInput.setText("");
             }
         }
@@ -304,8 +378,23 @@ public final class clientGUI extends javax.swing.JFrame
                 String recieved = currentClient.readMessage();
 
                 StringTokenizer st = new StringTokenizer(recieved, "#");
-                String message = st.nextToken();
-                String senderName = st.nextToken();
+
+                boolean chatMessage = false;
+                String message;
+                String senderName;
+
+                if (st.countTokens() == 2)
+                {
+                    message = st.nextToken();
+                    senderName = st.nextToken();
+                }
+                else
+                {
+                    st.nextToken();
+                    chatMessage = true; // PLAIN TEXT MESSAGE INTENDED FOR USER
+                    message = st.nextToken();
+                    senderName = st.nextToken();
+                }
 
                 // PROTOCOLS
                 //MESSAGE FORMAT: PROTOCOL#RECIPIENT
@@ -347,22 +436,44 @@ public final class clientGUI extends javax.swing.JFrame
                 }
                 else if (message.equals("requestAccepted"))
                 {
-
+                    chatArea.setText("");
                     JOptionPane.showMessageDialog(rootPane, "Sweet Boetie, " + senderName + " is in the chat, let him know about the jol last night.");
                     chattingPartner = senderName;
 
+                }
+                else if (message.equals("messageDelivered"))
+                {
+                    try
+                        {
+                            Thread.sleep(500);
+                        }
+                        catch (InterruptedException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    messageDelivered.setVisible(true);
+                    try
+                        {
+                            Thread.sleep(2000);
+                        }
+                        catch (InterruptedException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    messageDelivered.setVisible(false);
                 }
                 else if (recieved.equals("null"))
                 {
                     //DO NOTHING                                           
                 }
-                //add protocol for normal message ?
-                else
+                else if (chatMessage)
                 {
                     //IF CLIENT IS RECIEVING PLAIN TEXT MESSAGE FROM SENDER
                     if (senderName.equals(chattingPartner))
                     {
-                        chatArea.append(chattingPartner + ": " + message + "\n");
+                        chatArea.append(chattingPartner + ": " + message + "\n");                        
+                        currentClient.sendMessage("messageDelivered#" + chattingPartner);
+                        
                     }
 
                 }
@@ -370,8 +481,37 @@ public final class clientGUI extends javax.swing.JFrame
         }
     });
 
+    public void listenForFile()
+    {
+        listenForFile.start();
+    }
+
+    Thread listenForFile = new Thread(new Runnable()
+    {
+        @Override
+        public void run()
+        {
+
+            while (true)
+            {
+                try
+                {
+                    //MESSAGE SENT FROM SERVER TO CLIENT
+                    // must still check that sender is valid
+                    currentClient.receiveFile();
+                }
+                catch (IOException ex)
+                {
+                    System.out.println("Couldn't receive file");
+                }
+            }
+        }
+
+    });
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel attach;
+    private javax.swing.JLabel attachedFileDisplay;
     private javax.swing.JTextArea chatArea;
     private javax.swing.JTextField clientInput;
     private javax.swing.JList clientList;
@@ -382,6 +522,7 @@ public final class clientGUI extends javax.swing.JFrame
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JLabel messageDelivered;
     private javax.swing.JLabel send;
     // End of variables declaration//GEN-END:variables
 }

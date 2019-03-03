@@ -118,11 +118,26 @@ class ClientHandler implements Runnable
                     this.socket.close();
                     break;
                 }
-
+                
+                boolean chatMessage = false;
+                String message;
+                String recipientName;
                 // BREAK RECEIVED MESSAGE INTO TEXT AND RECIPIENT PART
                 StringTokenizer st = new StringTokenizer(received, "#");
-                String message = st.nextToken();
-                String recipientName = st.nextToken();
+                
+                if (st.countTokens() == 2)
+                {
+                    message = st.nextToken();
+                    recipientName = st.nextToken();
+                }                
+                else 
+                {
+                    st.nextToken();
+                    chatMessage = true; // PLAIN TEXT MESSAGE INTENDED FOR USER
+                    message = st.nextToken();
+                    recipientName = st.nextToken();
+                }
+                
                 // SEARCH FOR RECIPIENT CLIENT HANDLER
                 ClientHandler recipient = null;
                 for (ClientHandler client : Server.clientList)
@@ -159,10 +174,17 @@ class ClientHandler implements Runnable
                         recipient.outputStream.writeUTF("requestAccepted#" + name);
 
                     }
-                    else
+                    else if (message.equals("messageDelivered"))
+                    {
+                        // WE ARE TELLING RECIPIENT WHICH CLIENT DECLINED TO CONNECT WITH HIM
+                        
+                        recipient.outputStream.writeUTF("messageDelivered#" + name);
+
+                    }
+                    else if (chatMessage)
                     {
                         // IF CLIENT IS SENDING PLAIN TEXT MESSAGE TO RECIPIENT                                               
-                        recipient.outputStream.writeUTF(message + "#" + name);
+                        recipient.outputStream.writeUTF("chatMessage#"+message + "#" + name);
                     }
                 }
 
