@@ -68,8 +68,8 @@ class ClientHandler implements Runnable
     String filename;
     long fileSize;
     private String chattingPartnerName;
-    final DataInputStream inputStream;
-    final DataOutputStream outputStream;
+    DataInputStream inputStream;
+    DataOutputStream outputStream;
     Socket socket;
     boolean online;
     File home = FileSystemView.getFileSystemView().getHomeDirectory();
@@ -280,8 +280,8 @@ class ClientHandler implements Runnable
         }       
 
         bos.flush();
-        System.out.println("adding new cuzzy for some reason before sending file");
-        System.out.println("File saved successfully!");
+        
+        System.out.println("File stored in server successfully!");
         sendFile(writtenFile, recipient, chattingPartnerName);
     }
 
@@ -289,12 +289,14 @@ class ClientHandler implements Runnable
     {
 
         recipient.outputStream.writeUTF("fileNameFromServer#" + file.getName() + "#" + name);
+        recipient.outputStream.writeUTF("fileSizeFromServer#" + file.length() + "#" + name);
+        
         //Specify the file
         FileInputStream fileInputStream = new FileInputStream(file);
         BufferedInputStream bis = new BufferedInputStream(fileInputStream);
 
         //Get socket's output stream
-        OutputStream outStream = (OutputStream) outputStream;
+        OutputStream outStream = (OutputStream) recipient.outputStream;
 
         //Read File Contents into contents array 
         byte[] contents;
@@ -321,6 +323,7 @@ class ClientHandler implements Runnable
         }
 
         outStream.flush();
+        outputStream =  new DataOutputStream(socket.getOutputStream());
         //File transfer done. Close the socket connection!
         System.out.println("File sent succesfully!");
     }

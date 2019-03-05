@@ -23,6 +23,7 @@ public class Client
     File home = FileSystemView.getFileSystemView().getHomeDirectory();
     String desktop = home.getAbsolutePath();
     String username;
+    static Socket socket;
 
     public Client(String args[]) throws IOException
     {
@@ -35,7 +36,7 @@ public class Client
         InetAddress IP = InetAddress.getByName("localhost");
 
         // ESTABLISH CONNECTION 
-        Socket socket = new Socket(IP, SERVER_PORT);
+        socket = new Socket(IP, SERVER_PORT);
 
         // OBTAIN INPUT AND OUTPUT STREAMS
         inputStream = new DataInputStream(socket.getInputStream());
@@ -107,28 +108,34 @@ public class Client
         }   
         
         outStream.flush(); 
+        outputStream =  new DataOutputStream(socket.getOutputStream());
         //File transfer done. Close the socket connection!
        
         System.out.println("File sent succesfully!");
     }
 
-    public void receiveFile(String filename) throws UnknownHostException, IOException
+    public void receiveFile(String filename, long fileSize) throws UnknownHostException, IOException
     {
-        
         byte[] contents = new byte[10000];
         
-        //Initialize the FileOutputStream to the output file's full path.
-        FileOutputStream fos = new FileOutputStream(desktop+"\\"+filename);
-        BufferedOutputStream bos = new BufferedOutputStream(fos);
+        int bytesRead = 0;
+        long size = fileSize;
         
+        //Initialize the FileOutputStream to the output file's full path.  
+        File writtenFile = new File(desktop + "\\"  + filename);
+        FileOutputStream fos = new FileOutputStream(writtenFile);
+        BufferedOutputStream bos = new BufferedOutputStream(fos);   
         
-        //No of bytes read in one read() call
-        int bytesRead = 0; 
+        while (size > 0 && (bytesRead = inputStream.read(contents, 0, (int) Math.min(contents.length, size))) != -1)
+        {
+            
+            bos.write(contents, 0, bytesRead);
+            size -= bytesRead;
+            
+        }       
+
+        bos.flush();
         
-        while((bytesRead=inputStream.read(contents))!=-1)
-            bos.write(contents, 0, bytesRead); 
-        
-        bos.flush(); 
         System.out.println("File saved successfully!");
     }
 

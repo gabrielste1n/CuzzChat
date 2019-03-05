@@ -32,6 +32,7 @@ public final class clientGUI extends javax.swing.JFrame
     String chattingPartner = "";
     String selectedFileName = "";
     String receivedFileName = "";
+    long receivedFileSize;
     File file;
 
     public clientGUI()
@@ -122,10 +123,22 @@ public final class clientGUI extends javax.swing.JFrame
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setText("YOUR CUZZIES");
 
-        connectionRequest.setBackground(new java.awt.Color(255, 222, 89));
+        connectionRequest.setBackground(new java.awt.Color(255, 204, 51));
         connectionRequest.setFont(new java.awt.Font("Segoe WP Black", 1, 14)); // NOI18N
         connectionRequest.setForeground(new java.awt.Color(255, 255, 255));
         connectionRequest.setText("SEND CONNECTION REQUEST");
+        connectionRequest.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        connectionRequest.addMouseListener(new java.awt.event.MouseAdapter()
+        {
+            public void mouseEntered(java.awt.event.MouseEvent evt)
+            {
+                connectionRequestMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt)
+            {
+                connectionRequestMouseExited(evt);
+            }
+        });
         connectionRequest.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -169,6 +182,14 @@ public final class clientGUI extends javax.swing.JFrame
             {
                 attachMouseClicked(evt);
             }
+            public void mouseEntered(java.awt.event.MouseEvent evt)
+            {
+                attachMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt)
+            {
+                attachMouseExited(evt);
+            }
         });
 
         send.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cuzzchat/send.png"))); // NOI18N
@@ -178,6 +199,14 @@ public final class clientGUI extends javax.swing.JFrame
             public void mouseClicked(java.awt.event.MouseEvent evt)
             {
                 sendMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt)
+            {
+                sendMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt)
+            {
+                sendMouseExited(evt);
             }
         });
 
@@ -276,7 +305,7 @@ public final class clientGUI extends javax.swing.JFrame
                     currentClient.sendMessage("chatMessage#" + clientInput.getText() + "#" + chattingPartner);
                 }
                 System.out.println("Sent transfer request");
-                currentClient.sendMessage("fileTransferRequest#" + bytesToMeg(file.getTotalSpace()) + "Mb" + "#" + chattingPartner);
+                currentClient.sendMessage("fileTransferRequest#" + format(file.getTotalSpace(),2) + "#" + chattingPartner);
                 
             }
             clientInput.setText("");
@@ -305,6 +334,36 @@ public final class clientGUI extends javax.swing.JFrame
 
         }
     }//GEN-LAST:event_attachMouseClicked
+
+    private void attachMouseEntered(java.awt.event.MouseEvent evt)//GEN-FIRST:event_attachMouseEntered
+    {//GEN-HEADEREND:event_attachMouseEntered
+        attach.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cuzzchat/attachHover.PNG")));
+    }//GEN-LAST:event_attachMouseEntered
+
+    private void attachMouseExited(java.awt.event.MouseEvent evt)//GEN-FIRST:event_attachMouseExited
+    {//GEN-HEADEREND:event_attachMouseExited
+        attach.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cuzzchat/attach.png")));
+    }//GEN-LAST:event_attachMouseExited
+
+    private void sendMouseEntered(java.awt.event.MouseEvent evt)//GEN-FIRST:event_sendMouseEntered
+    {//GEN-HEADEREND:event_sendMouseEntered
+       send.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cuzzchat/sendHover.PNG")));
+    }//GEN-LAST:event_sendMouseEntered
+
+    private void sendMouseExited(java.awt.event.MouseEvent evt)//GEN-FIRST:event_sendMouseExited
+    {//GEN-HEADEREND:event_sendMouseExited
+        send.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cuzzchat/send.PNG")));        
+    }//GEN-LAST:event_sendMouseExited
+
+    private void connectionRequestMouseEntered(java.awt.event.MouseEvent evt)//GEN-FIRST:event_connectionRequestMouseEntered
+    {//GEN-HEADEREND:event_connectionRequestMouseEntered
+        connectionRequest.setBackground(new java.awt.Color(255, 222, 89));
+    }//GEN-LAST:event_connectionRequestMouseEntered
+
+    private void connectionRequestMouseExited(java.awt.event.MouseEvent evt)//GEN-FIRST:event_connectionRequestMouseExited
+    {//GEN-HEADEREND:event_connectionRequestMouseExited
+        connectionRequest.setBackground(new java.awt.Color(255,204,51));
+    }//GEN-LAST:event_connectionRequestMouseExited
 
     /**
      * @param args the command line arguments
@@ -370,11 +429,16 @@ public final class clientGUI extends javax.swing.JFrame
         }
     };
 
-    private static final long MEGABYTE = 1024L * 1024L;
-
-    public static long bytesToMeg(long bytes)   // convert bytes to megabytes
-    {
-        return bytes / MEGABYTE;
+    public static String format(double bytes, int digits) {
+        String[] dictionary = { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
+        int index = 0;
+        for (index = 0; index < dictionary.length; index++) {
+            if (bytes < 1024) {
+                break;
+            }
+            bytes = bytes / 1024;
+        }
+        return String.format("%." + digits + "f", bytes) + dictionary[index];
     }
 
     public void lookForResponse()
@@ -396,15 +460,15 @@ public final class clientGUI extends javax.swing.JFrame
                 StringTokenizer st = new StringTokenizer(recieved, "#");
 
                 String dataType = "";
-                String message;
-                String senderName;
+                String message= "";
+                String senderName= "";
 
                 if (st.countTokens() == 2)
                 {
                     message = st.nextToken();
                     senderName = st.nextToken();
                 }
-                else
+                else if(st.countTokens() == 3)
                 {
 
                     dataType = st.nextToken();
@@ -470,11 +534,11 @@ public final class clientGUI extends javax.swing.JFrame
                 else if (message.equals("chatTerminated"))
                 {
 
-                    chatArea.setText(chattingPartner + " has left the chat");
+                    chatArea.setText(senderName + " has left the chat");
 
                     for (int i = 0; i < listModel.size(); i++)
                     {
-                        if (listModel.get(i).equals(chattingPartner))
+                        if (listModel.get(i).equals(senderName))
                         {
                             listModel.remove(i);
                         }
@@ -578,10 +642,15 @@ public final class clientGUI extends javax.swing.JFrame
                 else if (dataType.equals("fileNameFromServer"))
                     {
                         System.out.println("recipient got file name:" + message);
-                        receivedFileName = message;
+                        receivedFileName = message;                    
+                    }
+                else if (dataType.equals("fileSizeFromServer"))
+                    {
+                        System.out.println("recipient got file size:" + message);
+                        receivedFileSize = Long.parseLong(message);
                     try
                     {
-                        currentClient.receiveFile(receivedFileName);
+                        currentClient.receiveFile(receivedFileName, receivedFileSize);
                     }
                     catch (IOException ex)
                     {
@@ -636,20 +705,21 @@ public final class clientGUI extends javax.swing.JFrame
         @Override
         public void run()
         {
-
+            
             while (true)
             {
                 if (!chattingPartner.equals(""))
                 {
                     currentClient.sendMessage("chatTerminated#" + chattingPartner);
-                }
-                currentClient.sendMessage("logout");
-                System.exit(0);
-                break;
+                    currentClient.sendMessage("logout");
+                    break;
+                }                
             }
         }
 
     });
+    
+  
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel attach;
