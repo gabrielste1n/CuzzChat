@@ -31,6 +31,7 @@ public final class clientGUI extends javax.swing.JFrame
 
     String chattingPartner = "";
     String selectedFileName = "";
+    String receivedFileName = "";
     File file;
 
     public clientGUI()
@@ -55,7 +56,7 @@ public final class clientGUI extends javax.swing.JFrame
         {
             Logger.getLogger(clientGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+        currentClient.sendMessage("getUsername");
         // START LOOKING FOR MESSAGES FROM SERVER
         lookForResponse();
         clientInput.addActionListener(action);
@@ -276,6 +277,7 @@ public final class clientGUI extends javax.swing.JFrame
                 }
                 System.out.println("Sent transfer request");
                 currentClient.sendMessage("fileTransferRequest#" + bytesToMeg(file.getTotalSpace()) + "Mb" + "#" + chattingPartner);
+                
             }
             clientInput.setText("");
         }
@@ -521,6 +523,7 @@ public final class clientGUI extends javax.swing.JFrame
                     {
                         System.out.println("he accepted");
                         currentClient.sendMessage("fileNameForTransfer#"+file.getName()+"#"+chattingPartner);
+                        currentClient.sendMessage("fileSize#"+file.length()+"#"+chattingPartner);
                         currentClient.sendFile(file);
                     }
                     catch (IOException ex)
@@ -572,6 +575,19 @@ public final class clientGUI extends javax.swing.JFrame
                     }
                     messageDelivered.setVisible(false);
                 }
+                else if (dataType.equals("fileNameFromServer"))
+                    {
+                        System.out.println("recipient got file name:" + message);
+                        receivedFileName = message;
+                    try
+                    {
+                        currentClient.receiveFile(receivedFileName);
+                    }
+                    catch (IOException ex)
+                    {
+                        Logger.getLogger(clientGUI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    }
                 else if (message.equals("fileReceived"))
                 {
                     try

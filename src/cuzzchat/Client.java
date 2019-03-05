@@ -8,6 +8,7 @@ import java.util.Scanner;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.filechooser.FileSystemView;
 
 /**
  *
@@ -19,6 +20,8 @@ public class Client
     final static int SERVER_PORT = 1234;
     static DataInputStream inputStream;
     static DataOutputStream outputStream;
+    File home = FileSystemView.getFileSystemView().getHomeDirectory();
+    String desktop = home.getAbsolutePath();
     String username;
 
     public Client(String args[]) throws IOException
@@ -75,17 +78,17 @@ public class Client
     
     public void sendFile(File file) throws IOException
     {
-        Socket socket = new Socket(InetAddress.getByName("localhost"), SERVER_PORT);
+        
         //Specify the file
         FileInputStream fileInputStream = new FileInputStream(file);
         BufferedInputStream bis = new BufferedInputStream(fileInputStream); 
           
         //Get socket's output stream
-        OutputStream outStream = socket.getOutputStream();
+        OutputStream outStream = (OutputStream) outputStream;
                 
         //Read File Contents into contents array 
         byte[] contents;
-        long fileLength = file.length(); 
+        long fileLength = file.length();         
         long current = 0;
          
         long start = System.nanoTime();
@@ -105,30 +108,27 @@ public class Client
         
         outStream.flush(); 
         //File transfer done. Close the socket connection!
-        socket.close();
+       
         System.out.println("File sent succesfully!");
     }
 
-    public void receiveFile() throws UnknownHostException, IOException
+    public void receiveFile(String filename) throws UnknownHostException, IOException
     {
-        //Initialize socket
-        Socket socket = new Socket(InetAddress.getByName("localhost"), SERVER_PORT);
+        
         byte[] contents = new byte[10000];
         
         //Initialize the FileOutputStream to the output file's full path.
-        FileOutputStream fos = new FileOutputStream("C:\\Users\\gabri\\Desktop");
+        FileOutputStream fos = new FileOutputStream(desktop+"\\"+filename);
         BufferedOutputStream bos = new BufferedOutputStream(fos);
-        InputStream is = socket.getInputStream();
+        
         
         //No of bytes read in one read() call
         int bytesRead = 0; 
         
-        while((bytesRead=is.read(contents))!=-1)
+        while((bytesRead=inputStream.read(contents))!=-1)
             bos.write(contents, 0, bytesRead); 
         
         bos.flush(); 
-        socket.close(); 
-        
         System.out.println("File saved successfully!");
     }
 
