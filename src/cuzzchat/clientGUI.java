@@ -31,6 +31,7 @@ public final class clientGUI extends javax.swing.JFrame
 
     String chattingPartner = "";
     String selectedFileName = "";
+    File file;
 
     public clientGUI()
     {
@@ -57,8 +58,6 @@ public final class clientGUI extends javax.swing.JFrame
 
         // START LOOKING FOR MESSAGES FROM SERVER
         lookForResponse();
-        // START LOOKING FOR FILES FROM SERVER
-//        listenForFile();
         clientInput.addActionListener(action);
 
         Runtime.getRuntime().addShutdownHook(logout);
@@ -261,10 +260,27 @@ public final class clientGUI extends javax.swing.JFrame
 
         if (!chattingPartner.equals(""))
         {
-            chatArea.append("You: " + clientInput.getText() + "\n");
-            currentClient.sendMessage("chatMessage#" + clientInput.getText() + "#" + chattingPartner);
+
+            if (selectedFileName.equals("") && !clientInput.getText().equals(""))
+            {
+                chatArea.append("You: " + clientInput.getText() + "\n");
+                currentClient.sendMessage("chatMessage#" + clientInput.getText() + "#" + chattingPartner);
+
+            }
+            else
+            {
+                if (!clientInput.getText().equals(""))
+                {
+                    chatArea.append("You: " + clientInput.getText() + "\n");
+                    currentClient.sendMessage("chatMessage#" + clientInput.getText() + "#" + chattingPartner);
+                }
+                System.out.println("Sent transfer request");
+                currentClient.sendMessage("fileTransferRequest#" + bytesToMeg(file.getTotalSpace()) + "Mb" + "#" + chattingPartner);
+            }
             clientInput.setText("");
         }
+
+        attachedFileDisplay.setVisible(false);
 
     }//GEN-LAST:event_sendMouseClicked
 
@@ -275,7 +291,7 @@ public final class clientGUI extends javax.swing.JFrame
         if (option == JFileChooser.APPROVE_OPTION)
         {
 
-            File file = fc.getSelectedFile();
+            file = fc.getSelectedFile();
             String filePath = file.getAbsolutePath();
             selectedFileName = file.getName();
 
@@ -284,17 +300,6 @@ public final class clientGUI extends javax.swing.JFrame
 
             attachedFileDisplay.setText(" " + selectedFileName);
             attachedFileDisplay.setVisible(true);
-//            chatArea.append("You sent " + file.getName() + ".\n");
-//            currentClient.sendMessage("fileTransferRequest#" + chattingPartner);
-//            
-//            try
-//            {
-//                currentClient.sendFile(file);
-//            }
-//            catch (IOException ex)
-//            {
-//                System.out.println(ex);
-//            }
 
         }
     }//GEN-LAST:event_attachMouseClicked
@@ -363,6 +368,13 @@ public final class clientGUI extends javax.swing.JFrame
         }
     };
 
+    private static final long MEGABYTE = 1024L * 1024L;
+
+    public static long bytesToMeg(long bytes)   // convert bytes to megabytes
+    {
+        return bytes / MEGABYTE;
+    }
+
     public void lookForResponse()
     {
         readMessage.start();
@@ -381,7 +393,7 @@ public final class clientGUI extends javax.swing.JFrame
 
                 StringTokenizer st = new StringTokenizer(recieved, "#");
 
-                boolean chatMessage = false;
+                String dataType = "";
                 String message;
                 String senderName;
 
@@ -392,8 +404,8 @@ public final class clientGUI extends javax.swing.JFrame
                 }
                 else
                 {
-                    st.nextToken();
-                    chatMessage = true; // PLAIN TEXT MESSAGE INTENDED FOR USER
+
+                    dataType = st.nextToken();
                     message = st.nextToken();
                     senderName = st.nextToken();
                 }
@@ -439,25 +451,25 @@ public final class clientGUI extends javax.swing.JFrame
                 else if (message.equals("requestAccepted"))
                 {
                     if (chattingPartner.equals(""))
-                    {                       
+                    {
                         chatArea.setText("");
                         JOptionPane.showMessageDialog(rootPane, "Sweet Boetie, " + senderName + " is in the chat, let him know about the jol last night.");
                         chattingPartner = senderName;
                     }
                     else
                     {
-                        currentClient.sendMessage("chatTerminated#"+chattingPartner);
+                        currentClient.sendMessage("chatTerminated#" + chattingPartner);
                         chatArea.setText("");
                         JOptionPane.showMessageDialog(rootPane, "Sweet Boetie, " + senderName + " is in the chat, let him know about the jol last night.");
-                        chattingPartner = senderName;                        
+                        chattingPartner = senderName;
                     }
 
                 }
                 else if (message.equals("chatTerminated"))
                 {
 
-                    chatArea.setText(chattingPartner+ " has left the chat");
-                    
+                    chatArea.setText(chattingPartner + " has left the chat");
+
                     for (int i = 0; i < listModel.size(); i++)
                     {
                         if (listModel.get(i).equals(chattingPartner))
@@ -478,6 +490,7 @@ public final class clientGUI extends javax.swing.JFrame
                     {
                         e.printStackTrace();
                     }
+                    messageDelivered.setText(" Message Delivered");
                     messageDelivered.setVisible(true);
                     try
                     {
@@ -489,11 +502,104 @@ public final class clientGUI extends javax.swing.JFrame
                     }
                     messageDelivered.setVisible(false);
                 }
+
+                else if (dataType.equals("fileTransferRequest"))
+                {
+                    int response = JOptionPane.showConfirmDialog(rootPane, chattingPartner + " wants to send you a " + message + " file, do you wanna spend your data on this cuzz?");
+                    if (response == 0)
+                    {
+                        currentClient.sendMessage("fileTransferAccepted#" + chattingPartner);
+                    }
+                    else if (response == 1)
+                    {
+                        currentClient.sendMessage("fileTransferDeclined#" + chattingPartner);
+                    }
+                }
+                else if (message.equals("fileTransferAccepted"))
+                {
+                    try
+                    {
+                        System.out.println("he accepted");
+                        currentClient.sendMessage("fileNameForTransfer#"+file.getName()+"#"+chattingPartner);
+                        currentClient.sendFile(file);
+                    }
+                    catch (IOException ex)
+                    {
+                        Logger.getLogger(clientGUI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                else if (message.equals("fileTransferDeclined"))
+                {
+                    try
+                    {
+                        Thread.sleep(500);
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    messageDelivered.setText(" Your cuzzy doesn't have data right now, so he didn't download the file");
+                    messageDelivered.setVisible(true);
+                    try
+                    {
+                        Thread.sleep(2000);
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    messageDelivered.setVisible(false);
+                }
+                else if (message.equals("fileReceivedFromServer"))
+                {
+                    try
+                    {
+                        Thread.sleep(500);
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    messageDelivered.setText(" Your cuzzy downloaded the file");
+                    messageDelivered.setVisible(true);
+                    try
+                    {
+                        Thread.sleep(2000);
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    messageDelivered.setVisible(false);
+                }
+                else if (message.equals("fileReceived"))
+                {
+                    try
+                    {
+                        Thread.sleep(500);
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    messageDelivered.setText(" Your cuzzy downloaded the file");
+                    messageDelivered.setVisible(true);
+                    try
+                    {
+                        Thread.sleep(2000);
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    messageDelivered.setVisible(false);
+                }
+
                 else if (recieved.equals("null"))
                 {
                     //DO NOTHING                                           
                 }
-                else if (chatMessage)
+                else if (dataType.equals("chatMessage"))
                 {
                     //IF CLIENT IS RECIEVING PLAIN TEXT MESSAGE FROM SENDER
                     if (senderName.equals(chattingPartner))
@@ -507,34 +613,7 @@ public final class clientGUI extends javax.swing.JFrame
             }
         }
     });
-
-    public void listenForFile()
-    {
-        listenForFile.start();
-    }
-
-    Thread listenForFile = new Thread(new Runnable()
-    {
-        @Override
-        public void run()
-        {
-
-            while (true)
-            {
-                try
-                {
-                    //MESSAGE SENT FROM SERVER TO CLIENT
-                    // must still check that sender is valid
-                    currentClient.receiveFile();
-                }
-                catch (IOException ex)
-                {
-                    System.out.println("Couldn't receive file");
-                }
-            }
-        }
-
-    });
+   
 
     Thread logout = new Thread(new Runnable()
     {
@@ -550,6 +629,7 @@ public final class clientGUI extends javax.swing.JFrame
                 }
                 currentClient.sendMessage("logout");
                 System.exit(0);
+                break;
             }
         }
 

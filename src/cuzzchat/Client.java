@@ -77,11 +77,11 @@ public class Client
     {
         Socket socket = new Socket(InetAddress.getByName("localhost"), SERVER_PORT);
         //Specify the file
-        FileInputStream fis = new FileInputStream(file);
-        BufferedInputStream bis = new BufferedInputStream(fis); 
+        FileInputStream fileInputStream = new FileInputStream(file);
+        BufferedInputStream bis = new BufferedInputStream(fileInputStream); 
           
         //Get socket's output stream
-        OutputStream os = socket.getOutputStream();
+        OutputStream outStream = socket.getOutputStream();
                 
         //Read File Contents into contents array 
         byte[] contents;
@@ -99,11 +99,11 @@ public class Client
             } 
             contents = new byte[size]; 
             bis.read(contents, 0, size); 
-            os.write(contents);
+            outStream.write(contents);
             System.out.print("Sending file ... "+(current*100)/fileLength+"% complete!\n");
         }   
         
-        os.flush(); 
+        outStream.flush(); 
         //File transfer done. Close the socket connection!
         socket.close();
         System.out.println("File sent succesfully!");
@@ -116,7 +116,7 @@ public class Client
         byte[] contents = new byte[10000];
         
         //Initialize the FileOutputStream to the output file's full path.
-        FileOutputStream fos = new FileOutputStream("../src");
+        FileOutputStream fos = new FileOutputStream("C:\\Users\\gabri\\Desktop");
         BufferedOutputStream bos = new BufferedOutputStream(fos);
         InputStream is = socket.getInputStream();
         
