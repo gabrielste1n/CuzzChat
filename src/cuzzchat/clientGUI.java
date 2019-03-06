@@ -305,14 +305,14 @@ public final class clientGUI extends javax.swing.JFrame
                     currentClient.sendMessage("chatMessage#" + clientInput.getText() + "#" + chattingPartner);
                 }
                 System.out.println("Sent transfer request");
-                currentClient.sendMessage("fileTransferRequest#" + format(file.getTotalSpace(),2) + "#" + chattingPartner);
+                currentClient.sendMessage("fileTransferRequest#" + format(file.length(),2) + "#" + chattingPartner);
                 
             }
             clientInput.setText("");
         }
 
         attachedFileDisplay.setVisible(false);
-
+        selectedFileName = "";
     }//GEN-LAST:event_sendMouseClicked
 
     private void attachMouseClicked(java.awt.event.MouseEvent evt)//GEN-FIRST:event_attachMouseClicked

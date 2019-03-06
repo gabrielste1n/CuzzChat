@@ -65,7 +65,7 @@ public class Client
     {
         try
         {
-            // READ THE RECIEVED MESSAGE
+            // R-EAD THE RECIEVED MESSAGE
             return inputStream.readUTF();
 
         }
